@@ -231,21 +231,6 @@ public class BaccaratTest
         assertEquals(1000, bg.getCurrentBet());
         assertEquals("Player", bg.getHand());
         assertEquals(48, bg.getTheDealer().deckSize());
-
-        //evaluateWinnings() test
-        assertEquals(-10, bg2.evaluateWinnings());
-        System.out.println(bg.evaluateWinnings());
-        assertTrue((bg.evaluateWinnings() == 0.0) || (bg.evaluateWinnings() == 950)
-                || (bg.evaluateWinnings() == 1000) || (bg.evaluateWinnings() == -1000));
-
-        bgCardToString1 = bg.convertCardToString(bglHand1);
-        bgCardToString2 = bg.convertCardToString(bglHand2);
-
-        //convertCardToString() test
-        assertEquals("2C", bgCardToString1.get(0));
-        assertEquals("3D", bgCardToString1.get(1));
-        assertEquals("11H", bgCardToString2.get(0));
-        assertEquals("1S", bgCardToString2.get(1));
     }
 
     @Test
