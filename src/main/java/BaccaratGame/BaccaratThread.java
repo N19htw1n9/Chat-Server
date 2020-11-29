@@ -25,12 +25,14 @@ public class BaccaratThread extends Thread {
 
     @Override
     public void run() {
+        callback.accept("Game created for client #" + this.id);
+
         try {
             this.out = new ObjectOutputStream(this.connection.getOutputStream());
             this.in = new ObjectInputStream(this.connection.getInputStream());
             this.connection.setTcpNoDelay(true);
         } catch (Exception e) {
-            callback.accept("Client #" + id);
+            callback.accept("Game client #" + id);
             callback.accept("\tError: Could not open streams");
         }
 
@@ -38,7 +40,7 @@ public class BaccaratThread extends Thread {
             try {
                 BaccaratInfo req = (BaccaratInfo) in.readObject();
 
-                callback.accept("Client #" + this.id + " sent a request: ");
+                callback.accept("Game client #" + this.id + " sent a request: ");
                 callback.accept("\tBid: " + req.bid + "\tHand: " + req.hand + "\n");
 
                 game = new BaccaratGame(req.bid, req.hand);
@@ -70,14 +72,14 @@ public class BaccaratThread extends Thread {
 
                 callback.accept("\tResponse sent!");
             } catch (Exception e) {
-                callback.accept("Error: Could not fetch request from client #" + this.id);
+                callback.accept("Error: Could not fetch request from game client #" + this.id);
                 try {
                     this.connection.close();
                 } catch (IOException e1) {
-                    callback.accept("Error: Could not close connection for client #" + this.id);
+                    callback.accept("Error: Could not close connection for game client #" + this.id);
                 }
             }
         }
-        callback.accept("Connection closed for client #" + this.id);
+        callback.accept("Connection closed for game client #" + this.id);
     }
 }
