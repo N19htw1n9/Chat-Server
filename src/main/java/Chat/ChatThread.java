@@ -23,6 +23,7 @@ public class ChatThread extends Thread {
 
     @Override
     public void run() {
+        callback.accept("\tChat created for Client #" + this.id);
         System.out.println("Chat thread started for client #" + this.id);
     }
 }
