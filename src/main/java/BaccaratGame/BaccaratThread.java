@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class BaccaratThread extends Thread {
-    Socket connection;
-    int id;
-    ObjectOutputStream out;
-    ObjectInputStream in;
-    BaccaratGame game;
+    private Socket connection;
+    private int id;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+    private BaccaratGame game;
 
     private Consumer<Serializable> callback;
 
@@ -23,6 +23,7 @@ public class BaccaratThread extends Thread {
         this.id = id;
     }
 
+    @Override
     public void run() {
         try {
             this.out = new ObjectOutputStream(this.connection.getOutputStream());
