@@ -1,6 +1,6 @@
 package GUI;
 
-import Server.Server;
+import Server.GameServer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -18,7 +18,7 @@ public class ServerApp extends Application {
     TextField portField;
     Scene startScene;
     BorderPane startPane;
-    Server serverConnection;
+    GameServer serverConnection;
 
     ListView<String> listItems = new ListView<String>();
 
@@ -41,7 +41,7 @@ public class ServerApp extends Application {
             primaryStage.setScene(this.createServerGui());
             primaryStage.setTitle("Baccarat Gamer Server");
 
-            serverConnection = new Server(data -> {
+            serverConnection = new GameServer(data -> {
                 Platform.runLater(() -> {
                     listItems.getItems().add(data.toString());
                 });
