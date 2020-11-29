@@ -51,8 +51,4 @@ public class GameServer {
             this.socket.close();
         }
     }
-
-    class ClientThread extends Thread {
-
-    }
 }
