@@ -1,5 +1,6 @@
 package Chat;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -23,7 +24,28 @@ public class ChatThread extends Thread {
 
     @Override
     public void run() {
-        callback.accept("\tChat created for Client #" + this.id);
-        System.out.println("Chat thread started for client #" + this.id);
+        callback.accept("Chat created for client #" + this.id);
+
+        try {
+            this.out = new ObjectOutputStream(this.connection.getOutputStream());
+            this.in = new ObjectInputStream(this.connection.getInputStream());
+        } catch (Exception e) {
+            callback.accept("Chat client #" + id);
+            callback.accept("\tError: Could not open streams");
+        }
+
+        while (!this.connection.isClosed()) {
+            try {
+                ChatData req = (ChatData) in.readObject();
+            } catch (Exception e) {
+                callback.accept("Error: Could not fetch request from chat client #" + this.id);
+                try {
+                    this.connection.close();
+                } catch (IOException e1) {
+                    callback.accept("Error: Could not close connection for chat client #" + this.id);
+                }
+            }
+        }
+        callback.accept("Connection closed for chat client #" + this.id);
     }
 }
