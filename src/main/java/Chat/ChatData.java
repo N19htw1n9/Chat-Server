@@ -8,6 +8,5 @@ public class ChatData implements Serializable {
     public ChatUser me;
     public ChatUser friend;
 
-    public String myMessage;
-    public String friendMessage;
+    public String message;
 }
