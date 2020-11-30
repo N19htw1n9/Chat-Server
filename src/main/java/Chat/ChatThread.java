@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.Thread;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class ChatThread extends Thread {
@@ -16,7 +17,8 @@ public class ChatThread extends Thread {
 
     private Consumer<Serializable> callback;
 
-    public ChatThread(Socket connection, Consumer<Serializable> callback, int id) {
+    public ChatThread(Socket connection, Consumer<Serializable> callback,
+            ConcurrentHashMap<Integer, ChatThread> chatThreads, int id) {
         this.connection = connection;
         this.callback = callback;
         this.id = id;
@@ -37,6 +39,9 @@ public class ChatThread extends Thread {
         while (!this.connection.isClosed()) {
             try {
                 ChatData req = (ChatData) in.readObject();
+                ChatUser me = req.me;
+                ChatUser friend = req.friend;
+                String message = req.message;
             } catch (Exception e) {
                 callback.accept("Error: Could not fetch request from chat client #" + this.id);
                 try {
