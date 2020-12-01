@@ -1,5 +1,4 @@
-target
-bin
+target/*
 .idea
 .vscode
 .settings
