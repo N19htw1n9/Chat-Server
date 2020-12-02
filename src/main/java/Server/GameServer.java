@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import BaccaratGame.BaccaratThread;
 import Chat.ChatThread;
 
 import java.lang.Thread;
@@ -16,7 +15,6 @@ import java.lang.Thread;
 public class GameServer {
     int count = 1;
     int port = 5555;
-    ArrayList<BaccaratThread> gameThreads = new ArrayList<BaccaratThread>();
     ConcurrentHashMap<Integer, ChatThread> chatThreads = new ConcurrentHashMap<Integer, ChatThread>();
     ServerThread server;
     private Consumer<Serializable> callback;
@@ -40,15 +38,10 @@ public class GameServer {
 
                 while (true) {
                     Socket connection = this.socket.accept();
-                    BaccaratThread gameClient = new BaccaratThread(connection, callback, count);
                     ChatThread chatClient = new ChatThread(connection, callback, chatThreads, count);
 
                     callback.accept("New client connected:");
                     callback.accept("\tClient #" + count);
-
-                    // Manage game client
-                    gameThreads.add(gameClient);
-                    gameClient.start(); // Start game thread for count client
 
                     // Manage chat client
                     chatThreads.put(count, chatClient);
