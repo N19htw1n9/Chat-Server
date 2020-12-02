@@ -56,6 +56,7 @@ public class ChatThread extends Thread {
 
                 callback.accept(String.format("\tClient #%d sent a message to client #%d", chat.from.id, chat.to.id));
 
+                this.chatThreads.get(chat.to.id).sendChatData(chat);
                 this.out.writeObject(req);
             } catch (Exception e) {
                 callback.accept("Error: Could not fetch request from chat client #" + this.id);
@@ -69,5 +70,11 @@ public class ChatThread extends Thread {
             }
         }
         callback.accept("Connection closed for chat client #" + this.id);
+    }
+
+    public void sendChatData(ChatData data) throws IOException {
+        Packet res = new Packet();
+        res.chat = data;
+        this.out.writeObject(res);
     }
 }
