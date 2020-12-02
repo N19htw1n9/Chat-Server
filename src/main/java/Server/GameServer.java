@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.lang.Thread;
 
 import Chat.ChatThread;
-
-import java.lang.Thread;
 
 public class GameServer {
     int count = 1;

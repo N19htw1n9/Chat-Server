@@ -14,6 +14,8 @@ public class ChatThread extends Thread {
     private int id;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    private ChatUser user;
+    private ConcurrentHashMap<Integer, ChatThread> chatThreads;
 
     private Consumer<Serializable> callback;
 
@@ -22,6 +24,10 @@ public class ChatThread extends Thread {
         this.connection = connection;
         this.callback = callback;
         this.id = id;
+        this.chatThreads = chatThreads;
+        // Create ChatUser and set member variables
+        this.user = new ChatUser();
+        user.id = id;
     }
 
     @Override
@@ -38,14 +44,25 @@ public class ChatThread extends Thread {
 
         while (!this.connection.isClosed()) {
             try {
-                ChatData req = (ChatData) in.readObject();
-                ChatUser me = req.me;
-                ChatUser friend = req.friend;
-                String message = req.message;
+                Packet req = (Packet) in.readObject();
+
+                callback.accept("Client #" + this.id + " sent a request: ");
+
+                if (req.chat == null)
+                    throw new Exception();
+
+                ChatData chat = req.chat;
+                chat.from = this.user;
+
+                callback.accept(String.format("\tClient #%d sent a message to client #%d", chat.from.id, chat.to.id));
+
+                this.out.writeObject(req);
             } catch (Exception e) {
                 callback.accept("Error: Could not fetch request from chat client #" + this.id);
                 try {
                     this.connection.close();
+                    // TODO: Test for errors
+                    this.chatThreads.remove(this.user.id);
                 } catch (IOException e1) {
                     callback.accept("Error: Could not close connection for chat client #" + this.id);
                 }
