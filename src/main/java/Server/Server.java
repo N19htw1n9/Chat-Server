@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.lang.Thread;
 
@@ -15,8 +16,8 @@ import Chat.ChatData;
 public class Server {
     int count = 1;
     int port = 5555;
-    ArrayList<ChatThread> chatThreads = new ArrayList<ChatThread>();
-    ArrayList<ChatData.ChatUser> clientsList = new ArrayList<ChatData.ChatUser>();
+    List<ChatThread> chatThreads = new ArrayList<ChatThread>();
+    List<ChatData.ChatUser> clientsList = new ArrayList<ChatData.ChatUser>();
     ServerThread server;
     private Consumer<Serializable> callback;
 
@@ -50,6 +51,7 @@ public class Server {
                     count++;
                 }
             } catch (Exception e) {
+                callback.accept("Something went wrong. Make sure port " + port + " is not in use.");
             }
         }
 
@@ -65,20 +67,19 @@ public class Server {
         private ObjectInputStream in;
         private ChatData.ChatUser user = new ChatData.ChatUser();
 
-        private Consumer<Serializable> callback;
-
         public ChatThread(Socket connection, int id) {
             this.connection = connection;
             this.id = id;
+            user.id = this.id;
+            user.name = null;
         }
 
         @Override
         public void run() {
-            callback.accept("Chat created for client #" + this.id);
-
             try {
                 this.out = new ObjectOutputStream(this.connection.getOutputStream());
                 this.in = new ObjectInputStream(this.connection.getInputStream());
+                connection.setTcpNoDelay(true);
 
                 // Add user to clientsList
                 user.id = id;
@@ -88,7 +89,11 @@ public class Server {
                     ChatData data = new ChatData();
                     data.clients = clientsList;
 
-                    client.sendChatData(data);
+                    try {
+                        client.sendChatData(data);
+                    } catch (IOException e) {
+                        callback.accept("Error: Could not update client list...");
+                    }
                 }
             } catch (Exception e) {
                 callback.accept("Chat client #" + id);
@@ -101,24 +106,21 @@ public class Server {
 
                     callback.accept("Request from client #" + this.id);
 
-                    if (req.message == null)
-                        throw new Exception();
+                    req.from = user;
 
                     callback.accept(String.format("\tClient #%d sent a message to client #%d", req.from.id, req.to.id));
 
-                    chatThreads.get(req.to.id).sendChatData(req);
+                    try {
+                        chatThreads.get(req.to.id).sendChatData(req);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        callback.accept("Could not send message to client #" + req.to.id);
+                    }
                     out.writeObject(req);
                 } catch (Exception e) {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
                     try {
                         this.connection.close();
-                        try {
-                            chatThreads.get(id).join();
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                        }
-                        chatThreads.remove(id);
-                        callback.accept(String.format("Client %d removed from list", id));
                     } catch (IOException e1) {
                         callback.accept("Error: Could not close connection for chat client #" + this.id);
                     }
