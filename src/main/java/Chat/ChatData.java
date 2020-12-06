@@ -11,7 +11,7 @@ public class ChatData implements Serializable {
     public ChatUser to = null;
     public ArrayList<ChatUser> clients = null;
 
-    public class ChatUser {
+    public static class ChatUser {
         public String name;
         public int id;
     }
