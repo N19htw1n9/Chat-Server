@@ -11,8 +11,6 @@ import java.util.function.Consumer;
 import java.lang.Thread;
 
 import Chat.ChatData;
-import Chat.ChatUser;
-import Chat.Packet;
 
 public class Server {
     int count = 1;
@@ -64,16 +62,12 @@ public class Server {
         private int id;
         private ObjectOutputStream out;
         private ObjectInputStream in;
-        private ChatUser user;
 
         private Consumer<Serializable> callback;
 
         public ChatThread(Socket connection, int id) {
             this.connection = connection;
             this.id = id;
-            // Create ChatUser and set member variables
-            this.user = new ChatUser();
-            user.id = id;
         }
 
         @Override
@@ -90,27 +84,28 @@ public class Server {
 
             while (!this.connection.isClosed()) {
                 try {
-                    Packet req = (Packet) in.readObject();
+                    ChatData req = (ChatData) in.readObject();
 
-                    callback.accept("Client #" + this.id + " sent a request: ");
+                    callback.accept("Request from client #" + this.id);
 
-                    if (req.chat == null)
+                    if (req.message == null)
                         throw new Exception();
 
-                    ChatData chat = req.chat;
-                    chat.from = user;
+                    callback.accept(String.format("\tClient #%d sent a message to client #%d", req.from.id, req.to.id));
 
-                    callback.accept(
-                            String.format("\tClient #%d sent a message to client #%d", chat.from.id, chat.to.id));
-
-                    chatThreads.get(chat.to.id).sendChatData(chat);
+                    chatThreads.get(req.to.id).sendChatData(req);
                     out.writeObject(req);
                 } catch (Exception e) {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
                     try {
                         this.connection.close();
-                        // TODO: Test for errors
-                        chatThreads.remove(this.user.id);
+                        try {
+                            chatThreads.get(id).join();
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                        chatThreads.remove(id);
+                        callback.accept(String.format("Client %d removed from list", id));
                     } catch (IOException e1) {
                         callback.accept("Error: Could not close connection for chat client #" + this.id);
                     }
@@ -120,9 +115,7 @@ public class Server {
         }
 
         public void sendChatData(ChatData data) throws IOException {
-            Packet res = new Packet();
-            res.chat = data;
-            this.out.writeObject(res);
+            out.writeObject(data);
         }
     }
 }
