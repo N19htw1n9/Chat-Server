@@ -16,6 +16,7 @@ public class Server {
     int count = 1;
     int port = 5555;
     ArrayList<ChatThread> chatThreads = new ArrayList<ChatThread>();
+    ArrayList<ChatData.ChatUser> clientsList = new ArrayList<ChatData.ChatUser>();
     ServerThread server;
     private Consumer<Serializable> callback;
 
@@ -62,6 +63,7 @@ public class Server {
         private int id;
         private ObjectOutputStream out;
         private ObjectInputStream in;
+        private ChatData.ChatUser user = new ChatData.ChatUser();
 
         private Consumer<Serializable> callback;
 
@@ -77,6 +79,17 @@ public class Server {
             try {
                 this.out = new ObjectOutputStream(this.connection.getOutputStream());
                 this.in = new ObjectInputStream(this.connection.getInputStream());
+
+                // Add user to clientsList
+                user.id = id;
+                clientsList.add(user);
+
+                for (ChatThread client : chatThreads) {
+                    ChatData data = new ChatData();
+                    data.clients = clientsList;
+
+                    client.sendChatData(data);
+                }
             } catch (Exception e) {
                 callback.accept("Chat client #" + id);
                 callback.accept("\tError: Could not open streams");
