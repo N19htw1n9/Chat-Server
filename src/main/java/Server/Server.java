@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.lang.Thread;
 
 import Chat.ChatData;
+import Chat.ChatData.ChatUser;
 
 public class Server {
     int count = 1;
@@ -87,7 +88,7 @@ public class Server {
 
                 for (ChatThread client : chatThreads) {
                     ChatData data = new ChatData();
-                    data.clients = clientsList;
+                    data.clients = (ArrayList<ChatData.ChatUser>) clientsList;
 
                     try {
                         client.sendChatData(data);
