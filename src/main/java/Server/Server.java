@@ -109,7 +109,13 @@ public class Server {
             while (!this.connection.isClosed()) {
                 try {
                     ChatData req = (ChatData) in.readObject();
-                    req.from = user; // Add current client id
+                    // Check if client request with ChatUser me, if so then set user to req.me
+                    if (req.me != null) {
+                        req.me.id = id; // Set user id
+                        user = req.me;
+                        sendChatData(req);
+                    }
+                    req.from = user;
 
                     callback.accept("Request from client #" + this.id);
                     callback.accept(String.format("\tClient #%d sent a message", req.from.id));
@@ -129,7 +135,7 @@ public class Server {
                     }
 
                     if (!req.to.isEmpty())
-                        out.writeObject(req);
+                        sendChatData(req);
                 } catch (Exception e) {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
                     try {
@@ -145,8 +151,8 @@ public class Server {
             callback.accept("Connection closed for chat client #" + this.id);
         }
 
-        public void sendChatData(ChatData data) throws IOException {
-            out.writeObject(data);
+        public void sendChatData(ChatData res) throws IOException {
+            out.writeObject(res);
         }
     }
 }
