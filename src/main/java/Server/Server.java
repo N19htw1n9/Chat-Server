@@ -28,7 +28,10 @@ public class Server {
     }
 
     private void updateChatClients() {
-        for (ChatThread client : chatThreads) {
+        chatThreads.stream().forEach(client -> {
+            if (client == null)
+                return;
+
             ChatData data = new ChatData();
             data.clients = (ArrayList<ChatData.ChatUser>) clientsList.clone();
 
@@ -37,7 +40,7 @@ public class Server {
             } catch (IOException e) {
                 callback.accept("Error: Could not update client list...");
             }
-        }
+        });
     }
 
     class ServerThread extends Thread {
@@ -122,8 +125,8 @@ public class Server {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
                     try {
                         this.connection.close();
-                        clientsList.remove(id - 1);
-                        chatThreads.remove(id - 1);
+                        clientsList.set(id - 1, null);
+                        chatThreads.set(id - 1, null);
                         updateChatClients();
                     } catch (IOException e1) {
                         callback.accept("Error: Could not close connection for chat client #" + this.id);
