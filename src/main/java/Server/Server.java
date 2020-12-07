@@ -117,13 +117,11 @@ public class Server {
                     try {
                         req.to.stream().forEach(toClient -> {
                             ChatThread toUserThread = chatThreads.get(toClient.id - 1);
-                            if (toUserThread != null) {
-                                try {
-                                    toUserThread.sendChatData(req);
-                                } catch (IOException e) {
-                                    callback.accept("Something went wrong when trying to communicate with client #"
-                                            + toUserThread.id);
-                                }
+                            try {
+                                toUserThread.sendChatData(req);
+                            } catch (IOException e) {
+                                callback.accept("Something went wrong when trying to communicate with client #"
+                                        + toUserThread.id);
                             }
                         });
                     } catch (Exception e) {
