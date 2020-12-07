@@ -11,6 +11,7 @@ public class ChatData implements Serializable {
     public ChatUser from = null;
     public HashSet<ChatUser> to = null;
     public ArrayList<ChatUser> clients = null;
+    public ChatUser me = null; // Must only be sent when connection is first established
 
     public static class ChatUser implements Serializable {
         private static final long serialVersionUID = 1L;
