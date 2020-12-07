@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import java.lang.Thread;
 
 import Chat.ChatData;
-import Chat.ChatData.ChatUser;
 
 public class Server {
     int count = 1;
@@ -112,7 +111,7 @@ public class Server {
                     callback.accept(String.format("\tClient #%d sent a message to client #%d", req.from.id, req.to.id));
 
                     try {
-                        chatThreads.get(req.to.id).sendChatData(req);
+                        chatThreads.get(req.to.id - 1).sendChatData(req);
                     } catch (Exception e) {
                         e.printStackTrace();
                         callback.accept("Could not send message to client #" + req.to.id);
