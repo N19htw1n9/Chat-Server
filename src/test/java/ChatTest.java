@@ -14,7 +14,7 @@ import java.util.TreeSet;
 public class ChatTest
 {
     private ChatData cd1, cd2;
-    private ChatData.ChatUser cu1, cu2;
+    private ChatData.ChatUser cu1, cu2, cur;
 
     @Before
     public void init()
@@ -29,9 +29,10 @@ public class ChatTest
         cd2.from.name = "Client 1";
         cd2.from.id = 1;
 
-        cd2.to = new ChatData.ChatUser();
-        cd2.to.name = "Client 2";
-        cd2.to.id = 2;
+        cd2.to = new HashSet<>();
+        cd2.to.add(cu1);
+        Iterator<ChatData.ChatUser> it = cd2.to.iterator();
+        cur = it.next();
 
         cd2.clients = new ArrayList<>();
         cd2.clients.add(cu1);
@@ -54,8 +55,9 @@ public class ChatTest
         assertEquals("Hi", cd2.message);
         assertEquals("Client 1", cd2.from.name);
         assertEquals(1, cd2.from.id);
-        assertEquals("Client 2", cd2.to.name);
-        assertEquals(2, cd2.to.id);
+        assertEquals(1, cd2.to.size());
+        assertEquals(0, cur.id);
+        assertEquals(null, cur.name);
         assertEquals(1, cd2.clients.size());
         assertEquals(cu1, cd2.clients.get(0));
 
