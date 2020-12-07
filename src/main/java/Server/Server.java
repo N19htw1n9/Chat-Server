@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import java.lang.Thread;
 
@@ -16,8 +15,8 @@ import Chat.ChatData;
 public class Server {
     int count = 1;
     int port = 5555;
-    List<ChatThread> chatThreads = new ArrayList<ChatThread>();
-    List<ChatData.ChatUser> clientsList = new ArrayList<ChatData.ChatUser>();
+    ArrayList<ChatThread> chatThreads = new ArrayList<ChatThread>();
+    ArrayList<ChatData.ChatUser> clientsList = new ArrayList<ChatData.ChatUser>();
     ServerThread server;
     private Consumer<Serializable> callback;
 
@@ -87,7 +86,7 @@ public class Server {
 
                 for (ChatThread client : chatThreads) {
                     ChatData data = new ChatData();
-                    data.clients = (ArrayList<ChatData.ChatUser>) clientsList;
+                    data.clients = (ArrayList<ChatData.ChatUser>) clientsList.clone();
 
                     try {
                         client.sendChatData(data);
