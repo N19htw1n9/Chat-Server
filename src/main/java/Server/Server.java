@@ -27,6 +27,19 @@ public class Server {
         server.start();
     }
 
+    private void updateChatClients() {
+        for (ChatThread client : chatThreads) {
+            ChatData data = new ChatData();
+            data.clients = (ArrayList<ChatData.ChatUser>) clientsList.clone();
+
+            try {
+                client.sendChatData(data);
+            } catch (IOException e) {
+                callback.accept("Error: Could not update client list...");
+            }
+        }
+    }
+
     class ServerThread extends Thread {
         ServerSocket socket;
 
@@ -84,16 +97,7 @@ public class Server {
                 user.id = id;
                 clientsList.add(user);
 
-                for (ChatThread client : chatThreads) {
-                    ChatData data = new ChatData();
-                    data.clients = (ArrayList<ChatData.ChatUser>) clientsList.clone();
-
-                    try {
-                        client.sendChatData(data);
-                    } catch (IOException e) {
-                        callback.accept("Error: Could not update client list...");
-                    }
-                }
+                updateChatClients();
             } catch (Exception e) {
                 callback.accept("Chat client #" + id);
                 callback.accept("\tError: Could not open streams");
@@ -118,6 +122,9 @@ public class Server {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
                     try {
                         this.connection.close();
+                        clientsList.remove(id - 1);
+                        chatThreads.remove(id - 1);
+                        updateChatClients();
                     } catch (IOException e1) {
                         callback.accept("Error: Could not close connection for chat client #" + this.id);
                     }
