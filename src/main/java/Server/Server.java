@@ -112,19 +112,22 @@ public class Server {
                     req.from = user; // Add current client id
 
                     callback.accept("Request from client #" + this.id);
-                    callback.accept(String.format("\tClient #%d sent a message to client #%d", req.from.id, req.to.id));
+                    callback.accept(String.format("\tClient #%d sent a message", req.from.id));
 
-                    ChatThread toUserThread = null;
+                    boolean sent = false;
                     try {
-                        toUserThread = chatThreads.get(req.to.id - 1);
-                        if (toUserThread != null)
-                            toUserThread.sendChatData(req);
+                        for (ChatData.ChatUser toClient : req.to) {
+                            ChatThread toUserThread = chatThreads.get(toClient.id - 1);
+                            if (toUserThread != null) {
+                                toUserThread.sendChatData(req);
+                                sent = true;
+                            }
+                        }
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        callback.accept("Could not send message to client #" + req.to.id);
+                        callback.accept("Could not send message to clients");
                     }
 
-                    if (toUserThread != null)
+                    if (sent)
                         out.writeObject(req);
                 } catch (Exception e) {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);

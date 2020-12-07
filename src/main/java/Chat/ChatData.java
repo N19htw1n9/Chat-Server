@@ -2,13 +2,14 @@ package Chat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class ChatData implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public String message = null;
     public ChatUser from = null;
-    public ChatUser to = null;
+    public HashSet<ChatUser> to = null;
     public ArrayList<ChatUser> clients = null;
 
     public static class ChatUser implements Serializable {
