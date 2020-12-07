@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.function.Consumer;
 import java.lang.Thread;
 
@@ -118,7 +119,8 @@ public class Server {
                     req.from = user;
 
                     callback.accept("Request from client #" + this.id);
-                    callback.accept(String.format("\tClient #%d sent a message", req.from.id));
+                    callback.accept(
+                            String.format("\tClient #%d sent a message to: %s", id, buildToUsersString(req.to)));
 
                     try {
                         req.to.stream().forEach(toClient -> {
@@ -153,6 +155,12 @@ public class Server {
 
         public void sendChatData(ChatData res) throws IOException {
             out.writeObject(res);
+        }
+
+        private String buildToUsersString(HashSet<ChatData.ChatUser> toUsersSet) {
+            StringBuilder res = new StringBuilder();
+            toUsersSet.stream().forEach(i -> res.append(i.id + ", "));
+            return res.toString();
         }
     }
 }
