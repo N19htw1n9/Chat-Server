@@ -103,11 +103,9 @@ public class Server {
             while (!this.connection.isClosed()) {
                 try {
                     ChatData req = (ChatData) in.readObject();
+                    req.from = user; // Add current client id
 
                     callback.accept("Request from client #" + this.id);
-
-                    req.from = user;
-
                     callback.accept(String.format("\tClient #%d sent a message to client #%d", req.from.id, req.to.id));
 
                     try {
