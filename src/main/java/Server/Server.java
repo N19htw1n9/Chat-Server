@@ -28,7 +28,12 @@ public class Server {
         server.start();
     }
 
-    private void updateChatClients() {
+    /**
+     * Synchronized method to update all non-null clients on the clientThreads list.
+     * Can be used if a new client joins the network, or if an existing client is
+     * updated with new information.
+     */
+    private synchronized void updateChatClients() {
         chatThreads.stream().forEach(client -> {
             if (client == null)
                 return;
@@ -42,6 +47,53 @@ public class Server {
                 callback.accept("Error: Could not update client list...");
             }
         });
+    }
+
+    /**
+     * Synchronized method to add new clients to chatThreads
+     * 
+     * @param client
+     */
+    private synchronized void addChatThreads(ChatThread client) {
+        chatThreads.add(client);
+    }
+
+    /**
+     * Synchronized method to set a new value for the i-th element in chatThreads
+     * 
+     * @param i         Element to set new value on
+     * @param newClient Object that replaces the current value
+     */
+    private synchronized void setClient(int i, ChatThread newClient) {
+        chatThreads.set(i, newClient);
+    }
+
+    /**
+     * Synchronized method to add new ChatData.ChatUser to clientsList
+     * 
+     * @param user
+     */
+    private synchronized void addClientsList(ChatData.ChatUser user) {
+        clientsList.add(user);
+    }
+
+    /**
+     * Synchronized method to set a new value for the i-th element in clientsList
+     * 
+     * @param i         Element to set new value on
+     * @param newClient Object that replaces the current value
+     */
+    private synchronized void setClientsList(int i, ChatData.ChatUser newUser) {
+        clientsList.set(i, newUser);
+    }
+
+    /**
+     * Synchronized method to increment the count by i
+     * 
+     * @param i
+     */
+    private synchronized void incrementCount(int i) {
+        count += i;
     }
 
     class ServerThread extends Thread {
@@ -62,9 +114,9 @@ public class Server {
                     callback.accept("\tClient #" + count);
 
                     // Manage chat client
-                    chatThreads.add(chatClient);
+                    addChatThreads(chatClient); // synchronously add chatThread to threads list
                     chatClient.start(); // Start chat thread for count client
-                    count++;
+                    incrementCount(1);
                 }
             } catch (Exception e) {
                 callback.accept("Something went wrong. Make sure port " + port + " is not in use.");
@@ -99,7 +151,7 @@ public class Server {
 
                 // Add user to clientsList
                 user.id = id;
-                clientsList.add(user);
+                addClientsList(user);
 
                 updateChatClients();
             } catch (Exception e) {
@@ -142,8 +194,8 @@ public class Server {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
                     try {
                         this.connection.close();
-                        clientsList.set(id - 1, null);
-                        chatThreads.set(id - 1, null);
+                        setClientsList(id - 1, null);
+                        setClient(id - 1, null);
                         updateChatClients();
                     } catch (IOException e1) {
                         callback.accept("Error: Could not close connection for chat client #" + this.id);
