@@ -167,6 +167,8 @@ public class Server {
                         req.me.id = id; // Set user id
                         user = req.me;
                         sendChatData(req);
+
+                        callback.accept("Client #" + this.id + " request to change username to " + req.me.name);
                     }
                     req.from = user;
 
