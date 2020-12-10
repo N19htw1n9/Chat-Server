@@ -30,7 +30,7 @@ public class ServerApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Start Baccarat Game Server");
+        primaryStage.setTitle("Start Chat Server");
 
         this.portField = new TextField("5555");
         this.portField.setPromptText("Port number (e.g. 5555)");
@@ -39,7 +39,7 @@ public class ServerApp extends Application {
         startServerButton.setOnAction(e -> {
             this.port = Integer.parseInt(this.portField.getText());
             primaryStage.setScene(this.createServerGui());
-            primaryStage.setTitle("Baccarat Gamer Server");
+            primaryStage.setTitle(String.format("Chat server started on port: %d", port));
 
             serverConnection = new Server(data -> {
                 Platform.runLater(() -> {
