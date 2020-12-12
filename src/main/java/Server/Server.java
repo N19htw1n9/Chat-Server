@@ -142,18 +142,47 @@ public class Server {
             user.name = null;
         }
 
+        private void userNameSet(ChatData req) throws Exception {
+            req.me.id = id;
+            
+            user.name = req.me.name;
+            user.id = id;
+            addClientsList(user);
+
+            updateChatClients();
+
+            callback.accept(String.format("\tRequested a name change to %s", user.name));
+            sendChatData(req);
+        }
+
+        private void handleChat(ChatData req) throws Exception {
+            req.from = user;
+            callback.accept(String.format("\tClient #%d sent a message to: %s", id, buildToUsersString(req.to)));
+
+            try {
+                req.to.stream().forEach(toClient -> {
+                    ChatThread toUserThread = chatThreads.get(toClient.id - 1);
+                    try {
+                        toUserThread.sendChatData(req);
+                    } catch (IOException e) {
+                        callback.accept(
+                                "\tSomething went wrong when trying to communicate with client #" + toUserThread.id);
+                    }
+                });
+            } catch (Exception e) {
+                callback.accept("\tCould not send message to clients");
+            }
+
+            if (!req.to.isEmpty())
+                sendChatData(req);
+        }
+
         @Override
         public void run() {
             try {
                 this.out = new ObjectOutputStream(this.connection.getOutputStream());
                 this.in = new ObjectInputStream(this.connection.getInputStream());
                 connection.setTcpNoDelay(true);
-
-                // Add user to clientsList
-                user.id = id;
-                addClientsList(user);
-
-                updateChatClients();
             } catch (Exception e) {
                 callback.accept("Chat client #" + id);
                 callback.accept("\tError: Could not open streams");
@@ -167,39 +196,18 @@ public class Server {
 
                     // Set user to req.me if me is set to ChatUser with name field
                     if (req.me != null && req.me.name != null) {
-                        req.me.id = id;
-                        user = req.me;
-
-                        callback.accept(String.format("\tRequested a name change to %s", user.name));
-                        sendChatData(req);
+                        userNameSet(req);
                     }
 
                     if (req.to != null && req.message != null) {
-                        req.from = user;
-                        callback.accept(
-                                String.format("\tClient #%d sent a message to: %s", id, buildToUsersString(req.to)));
-                        
-                        try {
-                            req.to.stream().forEach(toClient -> {
-                                ChatThread toUserThread = chatThreads.get(toClient.id - 1);
-                                try {
-                                    toUserThread.sendChatData(req);
-                                } catch (IOException e) {
-                                    callback.accept("\tSomething went wrong when trying to communicate with client #"
-                                            + toUserThread.id);
-                                }
-                            });
-                        } catch (Exception e) {
-                            callback.accept("\tCould not send message to clients");
-                        }
-
-                        if (!req.to.isEmpty())
-                            sendChatData(req);
+                        handleChat(req);
                     }
                 } catch (Exception e) {
                     callback.accept("Error: Could not fetch request from chat client #" + this.id);
+
                     try {
                         this.connection.close();
+
                         setClientsList(id - 1, null);
                         setClient(id - 1, null);
                         updateChatClients();
