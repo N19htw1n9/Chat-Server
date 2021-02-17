@@ -19,7 +19,7 @@ $ cd ./Chat-Server
 ### Build project using Maven
 
 ```shell
-$ mvn pakcage
+$ mvn package
 ```
 
 ### Run server
